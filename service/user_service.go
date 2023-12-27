@@ -1,28 +1,39 @@
 package service
 
 import (
+	"errors"
+	"rmzstartup/helper"
 	model "rmzstartup/model/entity"
 	"rmzstartup/repository"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type RegisterUserInput struct {
-	Name       string `json:"name" binding:"required"`
-	Occupation string `json:"occupation" binding:"required"`
-	Email      string `json:"email" binding:"required,email"`
-	Password   string `json:"password" binding:"required"`
-}
+// type RegisterUserInput struct {
+// 	Name       string `json:"name" binding:"required"`
+// 	Occupation string `json:"occupation" binding:"required"`
+// 	Email      string `json:"email" binding:"required,email"`
+// 	Password   string `json:"password" binding:"required"`
+// }
+
+// type LoginInputUser struct {
+// 	Email    string `json:"email" binding:"required,email"`
+// 	Password string `json:"password" binding:"required"`
+// }
 
 type UserService interface {
-	RegisterUser(input RegisterUserInput) (model.User, error)
+	RegisterUser(input helper.RegisterUserInput) (model.User, error)
+	Login(input helper.LoginInputUser) (model.User, error)
+	CheckEmailAvalaible(input helper.CheckEmailInput) (bool, error)
+	SaveAvatar(ID, fileLocation string) (model.User, error)
 }
 
 type userService struct {
 	repository repository.UserRepository
 }
 
-func (s *userService) RegisterUser(input RegisterUserInput) (model.User, error) {
+func (s *userService) RegisterUser(input helper.RegisterUserInput) (model.User, error) {
 	user := model.User{}
 	user.Name = input.Name
 	user.Email = input.Email
@@ -41,6 +52,49 @@ func (s *userService) RegisterUser(input RegisterUserInput) (model.User, error) 
 		return newUser, err
 	}
 	return newUser, nil
+}
+
+func (s *userService) Login(input helper.LoginInputUser) (model.User, error) {
+	email := input.Email
+	password := input.Password
+
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return user, errors.New("No user found on that email")
+	}
+	if user.Id == uuid.Nil {
+		return user, errors.New("User not Found")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return user, errors.New("Wrong password !")
+	}
+	return user, nil
+}
+
+func (s *userService) CheckEmailAvalaible(input helper.CheckEmailInput) (bool, error) {
+	email := input.Email
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return false, err
+	}
+	if user.Id == uuid.Nil {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (s *userService) SaveAvatar(ID, fileLocation string) (model.User, error) {
+	user, err := s.repository.FindByID(ID)
+	if err != nil {
+		return user, err
+	}
+	updatedUser, err := s.repository.UpdateUser(user)
+	if err != nil {
+		return updatedUser, err
+	}
+	return updatedUser, nil
 }
 
 func NewUserService(repository repository.UserRepository) *userService {

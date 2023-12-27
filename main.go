@@ -39,24 +39,13 @@ func main() {
 
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository)
-
-	userByEmail, err := userRepository.FindByEmail("testing1111@mail.com")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	if userByEmail.Id == uuid.Nil {
-		fmt.Println("user not Found")
-	} else {
-		fmt.Println(userByEmail.Name)
-	}
-
-	fmt.Println(userByEmail.Name)
-
 	userHandler := handler.NewUserHandler(userService)
+
 	router := gin.Default()
 	api := router.Group("/api/v1")
 
 	api.POST("/register", userHandler.RegisterUser)
+	api.POST("/login", userHandler.Login)
+	api.POST("/email_checkers", userHandler.IsEmailAvalaible)
 	router.Run()
 }
