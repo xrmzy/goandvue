@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"rmzstartup/helper"
 	"rmzstartup/service"
@@ -92,8 +93,44 @@ func (h *userHandler) CheckEmailAvalaible(c *gin.Context) {
 
 }
 
-func (s *userHandler) UploadAvatar(c *gin.Context) {
+func (h *userHandler) UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.APIResponse("failed to upload avatar image", http.StatusUnprocessableEntity, "error", data)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
 
+	//harusnya dapet dari jwt nanti
+	userID := "2dd7e5e5-01c8-4d6d-8cb7-9c9bdde8e061"
+	path := fmt.Sprintf("images/%s-%s", userID, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.APIResponse("failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	_, err = h.userService.SaveAvatar(userID, path)
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+		}
+		response := helper.APIResponse("failed to save avatar image", http.StatusInternalServerError, "success", data)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	data := gin.H{
+		"is_uploaded": true,
+	}
+	response := helper.APIResponse("successfully uploaded avatar image", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
 }
 
 func NewUserHandler(userService service.UserService) *userHandler {

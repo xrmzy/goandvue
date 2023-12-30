@@ -90,6 +90,7 @@ func (s *userService) SaveAvatar(ID, fileLocation string) (model.User, error) {
 	if err != nil {
 		return user, err
 	}
+	user.AvatarFileName = fileLocation
 	updatedUser, err := s.repository.UpdateUser(user)
 	if err != nil {
 		return updatedUser, err

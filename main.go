@@ -8,7 +8,6 @@ import (
 	"rmzstartup/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,7 +23,7 @@ func initDB() error {
 
 	sqlDB, err := conn.DB()
 	if err != nil {
-		log.Fatal(fmt.Errorf("Failed to get Database instance: %s", err))
+		log.Fatal(fmt.Errorf("failed to get database instance: %s", err))
 	}
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(1000)
@@ -46,6 +45,7 @@ func main() {
 
 	api.POST("/register", userHandler.RegisterUser)
 	api.POST("/login", userHandler.Login)
-	api.POST("/email_checkers", userHandler.IsEmailAvalaible)
+	api.POST("/email_checkers", userHandler.CheckEmailAvalaible)
+	api.POST("/avatars", userHandler.UploadAvatar)
 	router.Run()
 }
