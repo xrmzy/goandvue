@@ -53,8 +53,22 @@ func main() {
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository)
 	authService := auth.NewJWTService()
+	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmRkN2U1ZTUtMDFjOC00ZDZkLThjYjctOWM5YmRkZThlMDYxIn0.nMCzIFG5IgxfwQTOLxIwozEzKV9mdhsCpmwFVaV5LxQ")
+	if err != nil {
+		fmt.Println("ERROR")
+		fmt.Println("ERROR")
+		fmt.Println("ERROR")
+	}
 
-	// fmt.Println(authService.GenerateToken("978b2fff-f56f-4cf8-a060-b6a83750d4bb"))
+	if token.Valid {
+		fmt.Println("VALID")
+		fmt.Println("VALID")
+		fmt.Println("VALID")
+	} else {
+		fmt.Println("INVALID")
+		fmt.Println("INVALID")
+		fmt.Println("INVALID")
+	}
 
 	userHandler := handler.NewUserHandler(userService, authService)
 
