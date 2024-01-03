@@ -10,18 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// type RegisterUserInput struct {
-// 	Name       string `json:"name" binding:"required"`
-// 	Occupation string `json:"occupation" binding:"required"`
-// 	Email      string `json:"email" binding:"required,email"`
-// 	Password   string `json:"password" binding:"required"`
-// }
-
-// type LoginInputUser struct {
-// 	Email    string `json:"email" binding:"required,email"`
-// 	Password string `json:"password" binding:"required"`
-// }
-
 type UserService interface {
 	RegisterUser(input helper.RegisterUserInput) (model.User, error)
 	Login(input helper.LoginInputUser) (model.User, error)

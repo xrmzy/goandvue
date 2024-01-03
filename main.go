@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"rmzstartup/auth"
 	"rmzstartup/handler"
 	"rmzstartup/repository"
 	"rmzstartup/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,7 +18,18 @@ import (
 var db *gorm.DB
 
 func initDB() error {
-	dsn := "host=localhost user=postgres password=1234 dbname=db_rmz port=5432 sslmode=disable"
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error Loading .env file")
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
+
 	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to connect database: %s", err))
@@ -38,7 +52,11 @@ func main() {
 
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository)
-	userHandler := handler.NewUserHandler(userService)
+	authService := auth.NewJWTService()
+
+	// fmt.Println(authService.GenerateToken("978b2fff-f56f-4cf8-a060-b6a83750d4bb"))
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")

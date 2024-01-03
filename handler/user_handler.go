@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"rmzstartup/auth"
 	"rmzstartup/helper"
 	"rmzstartup/service"
 
@@ -11,6 +12,7 @@ import (
 
 type userHandler struct {
 	userService service.UserService
+	authService auth.JWTService
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -26,14 +28,20 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.RegisterUser(input)
+	newUser, err := h.userService.RegisterUser(input)
 	if err != nil {
 		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
+	token, err := h.authService.GenerateToken(newUser.Id.String())
+	if err != nil {
+		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
 
-	formatter := helper.FormatUser(user, "token")
+	formatter := helper.FormatUser(newUser, token)
 	response := helper.APIResponse("Account has been registered", http.StatusCreated, "success", formatter)
 	c.JSON(http.StatusCreated, response)
 
@@ -50,14 +58,22 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	loggedUser, err := h.userService.Login(input)
+	loginUser, err := h.userService.Login(input)
 	if err != nil {
 		errorMessage := gin.H{"errors": err.Error()}
 		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", errorMessage)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-	formatter := helper.FormatUser(loggedUser, "token")
+
+	token, err := h.authService.GenerateToken(loginUser.Id.String())
+	if err != nil {
+		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := helper.FormatUser(loginUser, token)
 	response := helper.APIResponse("Login Success", http.StatusOK, "OK", formatter)
 	c.JSON(http.StatusOK, response)
 }
@@ -133,6 +149,9 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func NewUserHandler(userService service.UserService) *userHandler {
-	return &userHandler{userService: userService}
+func NewUserHandler(userService service.UserService, authService auth.JWTService) *userHandler {
+	return &userHandler{
+		userService: userService,
+		authService: authService,
+	}
 }
