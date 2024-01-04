@@ -15,6 +15,7 @@ type UserService interface {
 	Login(input helper.LoginInputUser) (model.User, error)
 	CheckEmailAvalaible(input helper.CheckEmailInput) (bool, error)
 	SaveAvatar(ID, fileLocation string) (model.User, error)
+	GetUserByID(ID string) (model.User, error)
 }
 
 type userService struct {
@@ -48,15 +49,15 @@ func (s *userService) Login(input helper.LoginInputUser) (model.User, error) {
 
 	user, err := s.repository.FindByEmail(email)
 	if err != nil {
-		return user, errors.New("No user found on that email")
+		return user, errors.New("no user found on that email")
 	}
 	if user.Id == uuid.Nil {
-		return user, errors.New("User not Found")
+		return user, errors.New("user not Found")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return user, errors.New("Wrong password !")
+		return user, err
 	}
 	return user, nil
 }
@@ -84,6 +85,18 @@ func (s *userService) SaveAvatar(ID, fileLocation string) (model.User, error) {
 		return updatedUser, err
 	}
 	return updatedUser, nil
+}
+
+func (s *userService) GetUserByID(ID string) (model.User, error) {
+	user, err := s.repository.FindByID(ID)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Id == uuid.Nil {
+		return user, errors.New("no user found on that ID")
+	}
+	return user, nil
 }
 
 func NewUserService(repository repository.UserRepository) *userService {

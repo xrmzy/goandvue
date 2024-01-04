@@ -6,6 +6,7 @@ import (
 	"os"
 	"rmzstartup/auth"
 	"rmzstartup/handler"
+	"rmzstartup/middleware"
 	"rmzstartup/repository"
 	"rmzstartup/service"
 
@@ -61,6 +62,33 @@ func main() {
 	api.POST("/register", userHandler.RegisterUser)
 	api.POST("/login", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvalaible)
-	api.POST("/avatars", userHandler.UploadAvatar)
+	api.POST("/avatars", middleware.AuthMiddleWare(authService, userService), userHandler.UploadAvatar)
 	router.Run()
 }
+
+// func authMiddleWare(authService auth.JWTService, userService service.UserService) gin.HandlerFunc {
+// 	func(c *gin.Context) {
+// 		autHeader := c.GetHeader("Authorization")
+
+// 		if !strings.Contains(autHeader, "Bearer") {
+// 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "Error", nil)
+// 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+// 			return
+// 		}
+
+// 		tokenString := ""
+// 		arrayToken := strings.Split(autHeader, " ")
+// 		if len(arrayToken) == 2 {
+// 			tokenString = arrayToken[1]
+// 		}
+
+// 		token, err = authService.ValidateToken(tokenString)
+// 		if err != nil {
+// 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "Error", nil)
+// 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+// 			return
+// 		}
+// 		claim, ok := token.ClaimSet(jwt.MapClaims)
+// 		if !ok || token.
+// 	}
+// }

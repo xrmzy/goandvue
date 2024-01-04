@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"rmzstartup/auth"
 	"rmzstartup/helper"
+	model "rmzstartup/model/entity"
 	"rmzstartup/service"
 
 	"github.com/gin-gonic/gin"
@@ -121,7 +122,8 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	}
 
 	//harusnya dapet dari jwt nanti
-	userID := "2dd7e5e5-01c8-4d6d-8cb7-9c9bdde8e061"
+	currentUser := c.MustGet("currentUser").(model.User)
+	userID := currentUser.Id.String()
 	path := fmt.Sprintf("images/%s-%s", userID, file.Filename)
 
 	err = c.SaveUploadedFile(file, path)
@@ -144,6 +146,7 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	}
 	data := gin.H{
 		"is_uploaded": true,
+		"user_id":     userID,
 	}
 	response := helper.APIResponse("successfully uploaded avatar image", http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
