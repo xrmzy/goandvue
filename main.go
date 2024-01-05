@@ -58,8 +58,7 @@ func main() {
 
 	campaignRepository := repository.NewCampaignRepo(db)
 	campaignService := service.NewCampaignService(campaignRepository)
-	campaigns, _ := campaignService.FindCampaigns("2dd7e5e5-01c8-4d6d-8cb7-9c9bdde8e061")
-	fmt.Println(len(campaigns))
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
@@ -68,5 +67,6 @@ func main() {
 	api.POST("/login", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvalaible)
 	api.POST("/avatars", middleware.AuthMiddleWare(authService, userService), userHandler.UploadAvatar)
+	api.GET("/campaigns", campaignHandler.GetCampaigns)
 	router.Run()
 }
