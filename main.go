@@ -56,6 +56,31 @@ func main() {
 	authService := auth.NewJWTService()
 	userHandler := handler.NewUserHandler(userService, authService)
 
+	campaignRepo := repository.NewCampaignRepo(db)
+	// campaigns, err := campaignRepo.FindByUserID("2dd7e5e5-01c8-4d6d-8cb7-9c9bdde8e061")
+	// if err != nil {
+	// 	return
+	// }
+	campaigns, err := campaignRepo.FindAll()
+	if err != nil {
+		return
+	}
+	// if err != nil {
+	// 	return  fmt.Println()
+	// }
+
+	fmt.Println("DEBUG")
+	fmt.Println("DEBUG")
+	fmt.Println("DEBUG")
+	fmt.Println(len(campaigns))
+	for _, campaign := range campaigns {
+		fmt.Println(campaign.Name)
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println("Jumlah gambar: ", len(campaign.CampaignImages))
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+	}
+
 	router := gin.Default()
 	api := router.Group("/api/v1")
 
@@ -65,30 +90,3 @@ func main() {
 	api.POST("/avatars", middleware.AuthMiddleWare(authService, userService), userHandler.UploadAvatar)
 	router.Run()
 }
-
-// func authMiddleWare(authService auth.JWTService, userService service.UserService) gin.HandlerFunc {
-// 	func(c *gin.Context) {
-// 		autHeader := c.GetHeader("Authorization")
-
-// 		if !strings.Contains(autHeader, "Bearer") {
-// 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "Error", nil)
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-// 			return
-// 		}
-
-// 		tokenString := ""
-// 		arrayToken := strings.Split(autHeader, " ")
-// 		if len(arrayToken) == 2 {
-// 			tokenString = arrayToken[1]
-// 		}
-
-// 		token, err = authService.ValidateToken(tokenString)
-// 		if err != nil {
-// 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "Error", nil)
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-// 			return
-// 		}
-// 		claim, ok := token.ClaimSet(jwt.MapClaims)
-// 		if !ok || token.
-// 	}
-// }
