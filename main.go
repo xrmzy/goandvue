@@ -56,30 +56,10 @@ func main() {
 	authService := auth.NewJWTService()
 	userHandler := handler.NewUserHandler(userService, authService)
 
-	campaignRepo := repository.NewCampaignRepo(db)
-	// campaigns, err := campaignRepo.FindByUserID("2dd7e5e5-01c8-4d6d-8cb7-9c9bdde8e061")
-	// if err != nil {
-	// 	return
-	// }
-	campaigns, err := campaignRepo.FindAll()
-	if err != nil {
-		return
-	}
-	// if err != nil {
-	// 	return  fmt.Println()
-	// }
-
-	fmt.Println("DEBUG")
-	fmt.Println("DEBUG")
-	fmt.Println("DEBUG")
+	campaignRepository := repository.NewCampaignRepo(db)
+	campaignService := service.NewCampaignService(campaignRepository)
+	campaigns, _ := campaignService.FindCampaigns("2dd7e5e5-01c8-4d6d-8cb7-9c9bdde8e061")
 	fmt.Println(len(campaigns))
-	for _, campaign := range campaigns {
-		fmt.Println(campaign.Name)
-		if len(campaign.CampaignImages) > 0 {
-			fmt.Println("Jumlah gambar: ", len(campaign.CampaignImages))
-			fmt.Println(campaign.CampaignImages[0].FileName)
-		}
-	}
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
