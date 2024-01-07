@@ -25,11 +25,11 @@ func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	if userID == "" {
 		campaigns, err := h.service.GetCampaigns("")
 		if err != nil {
-			response := helper.APIResponse("Error get campaigns", http.StatusBadRequest, "error", nil)
+			response := helper.APIResponse("Error get campaigns", http.StatusBadRequest, "error", helper.FormatCampaigns(campaigns))
 			c.JSON(http.StatusBadRequest, response)
 			return
 		}
-		response := helper.APIResponse("List of campaign", http.StatusOK, "success", campaigns)
+		response := helper.APIResponse("List of campaign", http.StatusOK, "success", helper.FormatCampaigns(campaigns))
 		c.JSON(http.StatusOK, response)
 		return
 	}
@@ -37,10 +37,10 @@ func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	// FindByID()
 	campaigns, err := h.service.GetCampaigns(userID)
 	if err != nil {
-		response := helper.APIResponse("Error get campaigns", http.StatusBadRequest, "error", nil)
+		response := helper.APIResponse("Error get campaigns", http.StatusBadRequest, "error", helper.FormatCampaigns(campaigns))
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-	response := helper.APIResponse("List of campaign", http.StatusOK, "success", campaigns)
+	response := helper.APIResponse("List of campaign", http.StatusOK, "success", helper.FormatCampaigns(campaigns))
 	c.JSON(http.StatusOK, response)
 }
