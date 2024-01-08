@@ -10,6 +10,7 @@ import (
 type CampaignRepo interface {
 	FindAll() ([]model.Campaign, error)
 	FindByUserID(userID string) ([]model.Campaign, error)
+	FindByID(ID int) (model.Campaign, error)
 }
 
 type campaignRepo struct {
@@ -42,4 +43,14 @@ func (r *campaignRepo) FindByUserID(userID string) ([]model.Campaign, error) {
 		return campaigns, err
 	}
 	return campaigns, nil
+}
+
+func (r *campaignRepo) FindByID(ID int) (model.Campaign, error) {
+	var campaign model.Campaign
+	err := r.db.Preload("User").Preload("CampaignImages").Where("id = ?", ID).Find(&campaign).Error
+
+	if err != nil {
+		return campaign, err
+	}
+	return campaign, nil
 }

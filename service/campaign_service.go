@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"rmzstartup/helper"
 	model "rmzstartup/model/entity"
 	"rmzstartup/repository"
 
@@ -10,6 +11,7 @@ import (
 
 type CampaignService interface {
 	GetCampaigns(userID string) ([]model.Campaign, error)
+	GetCampaignByID(input helper.GetCampaignDetailInput) (model.Campaign, error)
 }
 
 type campaignService struct {
@@ -21,26 +23,6 @@ func NewCampaignService(repository repository.CampaignRepo) *campaignService {
 }
 
 func (s *campaignService) GetCampaigns(userID string) ([]model.Campaign, error) {
-	// parseUserID, err := uuid.Parse(userID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if parseUserID != uuid.Nil {
-	// 	// campaign, err := s.repository.FindByUserID(userID)
-	// 	// if err != nil {
-	// 	// 	return campaign, err
-	// 	// }
-	// 	// return campaign, nil
-	// 	return s.repository.FindByUserID(userID)
-	// }
-
-	// // campaigns, err := s.repository.FindAll()
-	// // if err != nil {
-	// // 	return campaigns, err
-	// // }
-	// // return campaigns, nil
-	// return s.repository.FindAll()
-
 	if userID == "" {
 		return s.repository.FindAll()
 	}
@@ -52,4 +34,12 @@ func (s *campaignService) GetCampaigns(userID string) ([]model.Campaign, error) 
 		return nil, errors.New("Invalid user ID")
 	}
 	return s.repository.FindByUserID(userID)
+}
+
+func (s *campaignService) GetCampaignByID(input helper.GetCampaignDetailInput) (model.Campaign, error) {
+	campaign, err := s.repository.FindByID(input.ID)
+	if err != nil {
+		return campaign, err
+	}
+	return campaign, nil
 }
