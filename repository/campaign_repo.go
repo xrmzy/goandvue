@@ -12,6 +12,7 @@ type CampaignRepo interface {
 	FindByUserID(userID string) ([]model.Campaign, error)
 	FindByID(ID int) (model.Campaign, error)
 	Save(campaign model.Campaign) (model.Campaign, error)
+	Update(campaign model.Campaign) (model.Campaign, error)
 }
 
 type campaignRepo struct {
@@ -58,6 +59,14 @@ func (r *campaignRepo) FindByID(ID int) (model.Campaign, error) {
 
 func (r *campaignRepo) Save(campaign model.Campaign) (model.Campaign, error) {
 	err := r.db.Create(&campaign).Error
+	if err != nil {
+		return campaign, err
+	}
+	return campaign, nil
+}
+
+func (r *campaignRepo) Update(campaign model.Campaign) (model.Campaign, error) {
+	err := r.db.Save(&campaign).Error
 	if err != nil {
 		return campaign, err
 	}

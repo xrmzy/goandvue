@@ -15,6 +15,7 @@ type CampaignService interface {
 	GetCampaigns(userID string) ([]model.Campaign, error)
 	GetCampaignByID(input helper.GetCampaignDetailInput) (model.Campaign, error)
 	CreateCampaign(input helper.CreateCampaignInput) (model.Campaign, error)
+	UpdateCampaign(inputID helper.GetCampaignDetailInput, inputData helper.CreateCampaignInput) (model.Campaign, error)
 }
 
 type campaignService struct {
@@ -64,4 +65,27 @@ func (s *campaignService) CreateCampaign(input helper.CreateCampaignInput) (mode
 		return newCampaign, err
 	}
 	return newCampaign, nil
+}
+
+func (s *campaignService) UpdateCampaign(inputID helper.GetCampaignDetailInput, inputData helper.CreateCampaignInput) (model.Campaign, error) {
+	campaign, err := s.repository.FindByID(inputID.ID)
+	if err != nil {
+		return campaign, err
+	}
+
+	if campaign.UserID != inputData.User.Id.String() {
+		return campaign, errors.New("not an owner of the campaign")
+	}
+
+	campaign.Name = inputData.Name
+	campaign.ShortDescription = inputData.ShortDescription
+	campaign.Description = inputData.Description
+	campaign.Perks = inputData.Perks
+	campaign.GoalAmount = inputData.GoalAmount
+
+	updatedCampaign, err := s.repository.Update(campaign)
+	if err != nil {
+		return updatedCampaign, err
+	}
+	return updatedCampaign, nil
 }
