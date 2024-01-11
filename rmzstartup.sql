@@ -8,7 +8,7 @@ CREATE TABLE "users" (
   "role" VARCHAR,
   "token" VARCHAR,
   "created_at" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" TIMESTAMP NOT NULL
+  "updated_at" TIMESTAMP NOT NULL (CURRENT_TIMESTAMP)
 );
 
 CREATE TABLE "campaigns" (
@@ -23,7 +23,7 @@ CREATE TABLE "campaigns" (
   "backer_count" INT,
   "slug" VARCHAR,
   "created_at" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" TIMESTAMP NOT NULL
+  "updated_at" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
 CREATE TABLE "campaign_images" (
@@ -43,7 +43,7 @@ CREATE TABLE "transactions" (
   "status" VARCHAR,
   "code" VARCHAR,
   "created_at" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" TIMESTAMP NOT NULL
+  "updated_at" TIMESTAMP NOT NULL (CURRENT_TIMESTAMP)
 );
 
 ALTER TABLE "campaigns" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
