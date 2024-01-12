@@ -13,6 +13,8 @@ type CampaignRepo interface {
 	FindByID(ID int) (model.Campaign, error)
 	Save(campaign model.Campaign) (model.Campaign, error)
 	Update(campaign model.Campaign) (model.Campaign, error)
+	CreateImage(campaignImage model.CampaignImage) (model.CampaignImage, error)
+	MarkAllImagesAsNonPrimary(campaignID int) (bool, error)
 }
 
 type campaignRepo struct {
@@ -71,4 +73,22 @@ func (r *campaignRepo) Update(campaign model.Campaign) (model.Campaign, error) {
 		return campaign, err
 	}
 	return campaign, nil
+}
+
+func (r *campaignRepo) CreateImage(campaignImage model.CampaignImage) (model.CampaignImage, error) {
+	err := r.db.Create(&campaignImage).Error
+	if err != nil {
+		return campaignImage, err
+	}
+	return campaignImage, nil
+}
+
+func (r *campaignRepo) MarkAllImagesAsNonPrimary(campaignID int) (bool, error) {
+	// Query => "UPDATE campaign_images SET is_primary = false WHERE campaign_id = $1"
+
+	err := r.db.Model(&model.CampaignImage{}).Where("campaign_id = ?", campaignID).Update("is_primary", 0).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
