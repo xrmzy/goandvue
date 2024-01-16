@@ -7,9 +7,11 @@ import (
 	"rmzstartup/auth"
 	"rmzstartup/handler"
 	"rmzstartup/middleware"
+	"rmzstartup/payment"
 	"rmzstartup/repository"
 	"rmzstartup/service"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -52,19 +54,21 @@ func main() {
 	}
 
 	userRepository := repository.NewUserRepository(db)
+	campaignRepository := repository.NewCampaignRepo(db)
+	transactionRepository := repository.NewTransactionRepo(db)
+
 	userService := service.NewUserService(userRepository)
 	authService := auth.NewJWTService()
-	userHandler := handler.NewUserHandler(userService, authService)
-
-	campaignRepository := repository.NewCampaignRepo(db)
 	campaignService := service.NewCampaignService(campaignRepository)
-	campaignHandler := handler.NewCampaignHandler(campaignService)
+	paymentService := payment.NewPaymentService(transactionRepository, campaignRepository)
+	transactionService := service.NewTransactionService(transactionRepository, campaignRepository, paymentService)
 
-	transactionRepository := repository.NewTransactionRepo(db)
-	transactionService := service.NewTransactionService(transactionRepository, campaignRepository)
-	transactionHandler := handler.NewTransactionHandler(transactionService)
+	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
+	transactionHandler := handler.NewTransactionHandler(transactionService, paymentService)
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.Static("/images", "./images")
 	api := router.Group("/api/v1")
 
@@ -72,6 +76,7 @@ func main() {
 	api.POST("/login", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvalaible)
 	api.POST("/avatars", middleware.AuthMiddleWare(authService, userService), userHandler.UploadAvatar)
+	api.GET("/users/fetch", middleware.AuthMiddleWare(authService, userService), userHandler.FetchUser)
 
 	api.GET("/campaigns", campaignHandler.GetCampaigns)
 	api.GET("/campaigns/:id", campaignHandler.GetCampaign)
@@ -81,6 +86,8 @@ func main() {
 
 	api.GET("/campaigns/:id/transactions", middleware.AuthMiddleWare(authService, userService), transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", middleware.AuthMiddleWare(authService, userService), transactionHandler.GetUserTransactions)
+	api.POST("/transactions", middleware.AuthMiddleWare(authService, userService), transactionHandler.CreateTrasaction)
+	api.POST("/transactions/notification", transactionHandler.GetNotification)
 
 	router.Run()
 }
